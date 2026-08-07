@@ -693,7 +693,7 @@ function buildGiftsPage() {
 }
 
 // ===== 히스토리 =====
-const DELTA = {"date":"2026-08-07","prevDate":"2026-08-06","summary":"2026-08-06 대비 8개 셀의 가격이 바뀌었습니다(인하 7 · 인상 1). 변동 폭이 가장 큰 곳은 이야기모바일 ④ LTE 100GB 19,900 → 900원입니다. 핀다이렉트는 8개 티어 전 구간 가격 변동이 없습니다. 나머지 105개 셀은 직전 회차와 동일합니다.","changes":[{"tier":"t4","label":"④ LTE 100GB","c":"이야기모바일","from":19900,"to":900,"plan":"이야기 스페셜 100GB+"},{"tier":"t2","label":"② LTE 15GB","c":"이야기모바일","from":12500,"to":900,"plan":"이야기 스탠다드 100분15GB+"},{"tier":"t3","label":"③ LTE 11+2GB","c":"이야기모바일","from":15200,"to":8800,"plan":"이야기 데이터통화 완전 무제한 71GB+"},{"tier":"t4","label":"④ LTE 100GB","c":"시월모바일","from":17060,"to":11550,"plan":"더더 통화기본100GB+"},{"tier":"t6","label":"⑥ 5G 20GB","c":"이야기모바일","from":19900,"to":15400,"plan":"5G 함께이야기해S"},{"tier":"t3","label":"③ LTE 11+2GB","c":"시월모바일","from":12730,"to":8800,"plan":"더더 통화기본11GB+매일2GB"},{"tier":"t2","label":"② LTE 15GB","c":"시월모바일","from":9940,"to":6600,"plan":"더더 통화기본15GB+"},{"tier":"t4","label":"④ LTE 100GB","c":"쉐이크모바일","from":9900,"to":11900,"plan":"쉐이크only LTE 100GB+밀리의서재"}],"added":[],"removed":[],"unchanged":105};
+const DELTA = {"date":"2026-08-07","prevDate":"2026-08-06","summary":"2026-08-06 대비 8개 셀의 가격이 바뀌었습니다(인하 7 · 인상 1). 변동 폭이 가장 큰 곳은 이야기모바일 ④ LTE 100GB 19,900 → 900원입니다. 핀다이렉트는 8개 티어 전 구간 가격 변동이 없습니다. 나머지 105개 셀은 직전 회차와 동일합니다.","changes":[{"tier":"t4","label":"④ LTE 100GB","c":"이야기모바일","from":19900,"to":900,"plan":"이야기 스페셜 100GB+"},{"tier":"t2","label":"② LTE 15GB","c":"이야기모바일","from":12500,"to":900,"plan":"이야기 스탠다드 100분15GB+"},{"tier":"t3","label":"③ LTE 11+2GB","c":"이야기모바일","from":15200,"to":8800,"plan":"이야기 데이터통화 완전 무제한 71GB+"},{"tier":"t4","label":"④ LTE 100GB","c":"시월모바일","from":17060,"to":11550,"plan":"더더 통화기본100GB+"},{"tier":"t6","label":"⑥ 5G 20GB","c":"이야기모바일","from":19900,"to":15400,"plan":"5G 함께이야기해S"},{"tier":"t3","label":"③ LTE 11+2GB","c":"시월모바일","from":12730,"to":8800,"plan":"더더 통화기본11GB+매일2GB"},{"tier":"t2","label":"② LTE 15GB","c":"시월모바일","from":9940,"to":6600,"plan":"더더 통화기본15GB+"},{"tier":"t4","label":"④ LTE 100GB","c":"쉐이크모바일","from":9900,"to":11900,"plan":"쉐이크only LTE 100GB+밀리의서재"}],"added":[],"removed":[],"unchanged":105,"moyo":{"rows":[{"key":"d100","label":"Ⓓ 100GB","c":"이야기모바일","from":2750,"to":12100,"base":"2026-08-04"},{"key":"d100","label":"Ⓓ 100GB","c":"핀다이렉트","from":11700,"to":6900,"base":"2026-08-04"},{"key":"d100","label":"Ⓓ 100GB","c":"찬스모바일","from":13900,"to":14900,"base":"2026-08-04"},{"key":"d100","label":"Ⓓ 100GB","c":"프리티","from":15050,"to":14300,"base":"2026-08-04"},{"key":"d100","label":"Ⓓ 100GB","c":"마블링","from":11700,"to":11000,"base":"2026-08-04"},{"key":"d100","label":"Ⓓ 100GB","c":"쉐이크모바일","from":11700,"to":11900,"base":"2026-08-04"}],"base":{"d7":"2026-08-06","d15":"2026-08-06","d71":"2026-08-06","d100":"2026-08-04"},"unchanged":101,"note":"Ⓐ 7GB 2026-08-06 · Ⓑ 15GB 2026-08-06 · Ⓒ 71GB 2026-08-06 · Ⓓ 100GB 2026-08-04"}};
 const HIST_PAGES = [
   {id:"t1", label:"① LTE 7GB", metric:"비교가"},
   {id:"t2", label:"② LTE 15GB", metric:"비교가"},
@@ -869,30 +869,50 @@ function setHistRange(){
 }
 /* DELTA-CARD-START */
 const DELTA_TOP_N = 10;   // 표에 펼쳐 보여줄 상위 건수. 초과분은 접고 버튼으로 연다.
-let deltaExpanded = false;
+let deltaExpanded = false, deltaMoyoExpanded = false;
 function toggleDeltaRows(){ deltaExpanded = !deltaExpanded; renderHistory(); }
+function toggleDeltaMoyoRows(){ deltaMoyoExpanded = !deltaMoyoExpanded; renderHistory(); }
+function _deltaFold(all, expanded, fnName){
+  const hidden = Math.max(0, all.length - DELTA_TOP_N);
+  const shown = (hidden && !expanded) ? all.slice(0, DELTA_TOP_N) : all;
+  const more = hidden
+    ? `<div class="histctrls" style="margin-top:8px"><button class="histbtn" onclick="${fnName}()">${expanded?"접기":"나머지 "+hidden+"건 더 보기"}</button></div>`
+    : "";
+  return { body: shown.join(""), more };
+}
 function histDeltaCard(){
   if (typeof DELTA === "undefined" || !DELTA || !DELTA.summary) return "";
   const f = n => Number(n).toLocaleString();
-  const ch = DELTA.changes || [], ad = DELTA.added || [], rm = DELTA.removed || [];
-  const head = `<div class="card"><h2>주요 변동</h2><div class="histnote">${DELTA.summary||""}</div>`;
-  if (!ch.length && !ad.length && !rm.length) return head + `</div>`;
   const up = d => `<span style="color:var(--red);font-weight:700">\u25B2${f(d)}원</span>`;
   const dn = d => `<span style="color:var(--blue);font-weight:700">\u25BC${f(d)}원</span>`;
-  const cell = r => `<td>${r.label}</td><td>${r.c}</td><td>${r.plan||"—"}</td>`;
-  const all = [];
-  for (const r of ch) { const d = r.to - r.from;
-    all.push(`<tr>${cell(r)}<td>${f(r.from)}원</td><td>${f(r.to)}원</td><td>${d>0?up(d):dn(-d)}</td></tr>`); }
-  for (const r of ad) all.push(`<tr>${cell(r)}<td>—</td><td>${f(r.to)}원</td><td><span class="badge b-good">신규</span></td></tr>`);
-  for (const r of rm) all.push(`<tr><td>${r.label}</td><td>${r.c}</td><td>—</td><td>${f(r.from)}원</td><td>—</td><td><span class="badge b-low">중단</span></td></tr>`);
-  const hidden = Math.max(0, all.length - DELTA_TOP_N);
-  const shown = (hidden && !deltaExpanded) ? all.slice(0, DELTA_TOP_N) : all;
-  const more = hidden
-    ? `<div class="histctrls" style="margin-top:8px"><button class="histbtn" onclick="toggleDeltaRows()">${deltaExpanded?"접기":"나머지 "+hidden+"건 더 보기"}</button></div>`
-    : "";
-  return head + `<div class="tblwrap"><table>
-    <thead><tr><th>티어</th><th>회사</th><th>요금제명</th><th>직전(${DELTA.prevDate||"—"})</th><th>이번(${DELTA.date||"—"})</th><th>변동</th></tr></thead>
-    <tbody>${shown.join("")}</tbody></table></div>${more}</div>`;
+  const ch = DELTA.changes || [], ad = DELTA.added || [], rm = DELTA.removed || [];
+  let out = `<div class="card"><h2>주요 변동</h2><div class="histnote">${DELTA.summary||""}</div>`;
+  if (ch.length || ad.length || rm.length) {
+    const cell = r => `<td>${r.label}</td><td>${r.c}</td><td>${r.plan||"—"}</td>`;
+    const all = [];
+    for (const r of ch) { const d = r.to - r.from;
+      all.push(`<tr>${cell(r)}<td>${f(r.from)}원</td><td>${f(r.to)}원</td><td>${d>0?up(d):dn(-d)}</td></tr>`); }
+    for (const r of ad) all.push(`<tr>${cell(r)}<td>—</td><td>${f(r.to)}원</td><td><span class="badge b-good">신규</span></td></tr>`);
+    for (const r of rm) all.push(`<tr><td>${r.label}</td><td>${r.c}</td><td>—</td><td>${f(r.from)}원</td><td>—</td><td><span class="badge b-low">중단</span></td></tr>`);
+    const fold = _deltaFold(all, deltaExpanded, "toggleDeltaRows");
+    out += `<div class="histnote" style="margin-top:12px;font-weight:700;color:var(--txt)">\u2460~\u2467 티어 · 프로모션가</div>`
+      + `<div class="tblwrap"><table>`
+      + `<thead><tr><th>티어</th><th>회사</th><th>요금제명</th><th>직전(${DELTA.prevDate||"—"})</th><th>이번(${DELTA.date||"—"})</th><th>변동</th></tr></thead>`
+      + `<tbody>${fold.body}</tbody></table></div>${fold.more}`;
+  }
+  const mv = DELTA.moyo;
+  if (mv && mv.rows && mv.rows.length) {
+    const all = mv.rows.map(r => r.from == null
+      ? `<tr><td>${r.label}</td><td>${r.c}</td><td>—</td><td>${f(r.to)}원</td><td><span class="badge b-good">신규</span></td></tr>`
+      : `<tr><td>${r.label}</td><td>${r.c}</td><td>${f(r.from)}원</td><td>${f(r.to)}원</td><td>${r.to>r.from?up(r.to-r.from):dn(r.from-r.to)}</td></tr>`);
+    const fold = _deltaFold(all, deltaMoyoExpanded, "toggleDeltaMoyoRows");
+    out += `<div class="histnote" style="margin-top:16px;font-weight:700;color:var(--txt)">\u2469 모요 기준 · 모요 게시가</div>`
+      + (mv.note ? `<div class="histnote">비교 기준 회차 — ${mv.note}</div>` : "")
+      + `<div class="tblwrap"><table>`
+      + `<thead><tr><th>구간</th><th>회사</th><th>직전</th><th>이번(${DELTA.date||"—"})</th><th>변동</th></tr></thead>`
+      + `<tbody>${fold.body}</tbody></table></div>${fold.more}`;
+  }
+  return out + `</div>`;
 }
 /* DELTA-CARD-END */
 function buildHistoryPage(){ return `<div id="histroot"></div>`; }
